@@ -16,9 +16,6 @@ The driver supports the following features:
  - Subscribe and forward RTCM data to support DGPS/RTK mode with centimeters-level accuracy
  - Calibrate 2D/3D magnetic field using the on-board ELLIPSE algorithms
 
-> [!NOTE]
-> Only ELLIPSE devices can be configured from the ROS driver. For High Performance INS such as EKINOX, APOGEE and QUANTA, please use the [sbgInsRestApi](https://developer.sbg-systems.com/sbgInsRestApi/)
-
 ## Installation
 ### Installation from Packages
 User can install the sbg_ros_driver through the standard ROS installation system.
@@ -75,23 +72,11 @@ roslaunch sbg_driver sbg_device_mag_calibration.launch
 ### Default config files
 Every configuration file is defined according to the same structure.  
 
-* **sbg_device_uart_default.yaml**
-This config file is the default one for UART connection with the device.  
-It does not configure the device through the ROS node, so it has to be previously configured (manually or with the ROS node).  
-It defines a few outputs for the device:
-  * `/sbg/imu_data`, `/sbg/ekf_quat` at 25Hz
-  * ROS standard outputs `/imu/data`, `/imu/velocity`, `/imu/temp` at 25Hz
-  * `/sbg/status`, `/sbg/utc_time` and `/imu/utc_ref` at 1Hz.
-
-* **sbg_device_udp_default.yaml**
-This config file is the default one for an Udp connection with the device.  
-It does not configure the device through the ROS node, so it has to be previously configured (manually or with the ROS node).  
-It defines a few outputs for the device:
-  * `/sbg/imu_data`, `/sbg/ekf_quat` at 25Hz
-  * ROS standard outputs `/imu/data`, `/imu/velocity`, `/imu/temp` at 25Hz
-  * `/sbg/status`, `/sbg/utc_time` and `/imu/utc_ref` at 1Hz.
 
 ### Example config files
+* **ellipse_N_jackal.yaml**
+Jackal config file for an Ellipse-N.
+
 * **ellipse_A_default.yaml**
 Default config file for an Ellipse-A.
 
@@ -105,6 +90,10 @@ Default config file for an Ellipse-N using internal GNSS.
 Default config file for an Ellipse-D using internal GNSS.
 
 ## Launch files
+
+## Jackal launch file
+roslaunch sbg_driver ellipse_N_jackal.launch
+
 ### Default launch files
 * **sbg_device_launch.py**
 Launch the sbg_device node to handle the received data, and load the `sbg_device_uart_default.yaml` configuration.
@@ -117,78 +106,11 @@ Launch the sbg_device_mag node to calibrate the magnetometers, and load the `ell
 The `sbg_device` node handles the communication with the connected device, publishes the SBG output to the ROS environment and subscribes to useful topics such as RTCM data streams.
 
 #### Published Topics
-##### SBG Systems specific topics
-SBG Systems has defined proprietary ROS messages to report more detailed information from the AHRS/INS.  
-These messages try to match as much as possible the sbgECom logs as they are output by the device.
-
-* **`/sbg/status`** [sbg_driver/SbgStatus](http://docs.ros.org/api/sbg_driver/html/msg/SbgStatus.html)
-
-  Provides information about the general status (Communication, Aiding, etc..).
-  
-* **`/sbg/utc_time`** [sbg_driver/SbgUtcTime](http://docs.ros.org/api/sbg_driver/html/msg/SbgUtcTime.html)
-
-  Provides UTC time reference.
-
-* **`/sbg/imu_data`** [sbg_driver/SbgImuData](http://docs.ros.org/api/sbg_driver/html/msg/SbgImuData.html)
-
-  IMU status, and sensors values.
-  
-* **`/sbg/ekf_euler`** [sbg_driver/SbgEkfEuler](http://docs.ros.org/api/sbg_driver/html/msg/SbgEkfEuler.html)
-
-  Computed orientation using Euler angles.
-  
-* **`/sbg/ekf_quat`** [sbg_driver/SbgEkfQuat](http://docs.ros.org/api/sbg_driver/html/msg/SbgEkfQuat.html)
-
-  Computed orientation using Quaternion.
-  
-* **`/sbg/ekf_nav`** [sbg_driver/SbgEkfNav](http://docs.ros.org/api/sbg_driver/html/msg/SbgEkfNav.html)
-
-  Computed navigation data.
-  
-* **`/sbg/mag`** [sbg_driver/SbgMag](http://docs.ros.org/api/sbg_driver/html/msg/SbgMag.html)
-
-  Calibrated magnetic field measurement.
-  
-* **`/sbg/mag_calib`** [sbg_driver/SbgMagCalib](http://docs.ros.org/api/sbg_driver/html/msg/SbgMagCalib.html)
-
-  Magnetometer calibration data.
-  
-* **`/sbg/ship_motion`** [sbg_driver/SbgShipMotion](http://docs.ros.org/api/sbg_driver/html/msg/SbgShipMotion.html)
-
-  Heave, surge and sway data.
-  
-* **`/sbg/gps_vel`** [sbg_driver/SbgGpsVel](http://docs.ros.org/api/sbg_driver/html/msg/SbgGpsVel.html)
-
-  GPS velocities from GPS receiver.
-  
-* **`/sbg/gps_pos`** [sbg_driver/SbgGpsPos](http://docs.ros.org/api/sbg_driver/html/msg/SbgGpsPos.html)
-
-  GPS positions from GPS receiver.
-  
-* **`/sbg/gps_hdt`** [sbg_driver/SbgGpsHdt](http://docs.ros.org/api/sbg_driver/html/msg/SbgGpsHdt.html)
-
-  GPS true heading from dual antenna system.
-  
-* **`/sbg/gps_raw`** [sbg_driver/SbgGpsRaw](http://docs.ros.org/api/sbg_driver/html/msg/SbgGpsRaw.html)
-
-  GPS raw data for post processing.
-  
-* **`/sbg/odo_vel`** [sbg_driver/SbgOdoVel](http://docs.ros.org/api/sbg_driver/html/msg/SbgOdoVel.html)
-
-  Odometer velocity.
-  
-* **`/sbg/event[ABCDE]`** [sbg_driver/SbgEvent](http://docs.ros.org/api/sbg_driver/html/msg/SbgEvent.html)
-
-  Event on sync in the corresponding pin.
-  
-* **`/sbg/air_data`** [sbg_driver/SbgAirData](http://docs.ros.org/api/sbg_driver/html/msg/SbgAirData.html)
-
-  Air data.
 
 ##### ROS standard topics
 
 > [!NOTE]
-> Please update the driver configuration to enable standard ROS messages publication `output.ros_standard`. Also, the driver only publish standard ROS messages if the driver is setup to use ENU frame convention `output.use_enu`.
+> Please update the driver configuration to enable standard ROS messages publication `output.ros_standard`. Also, the driver only publish standard ROS messages if the driver is setup to use ENU frame convention `output.use_enu`. It's already settled in the imu jackal yaml.
 
 In order to define ROS standard topics, it requires sometimes several SBG messages, to be merged.
 For each ROS standard, you have to activate the needed SBG outputs.
@@ -240,7 +162,7 @@ For each ROS standard, you have to activate the needed SBG outputs.
   Disabled by default, set `odometry.enable` in configuration file.
 
 ##### NMEA topics
-The driver can publish NMEA GGA messages from the internal GNSS receiver. It can be used with third party [NTRIP client](https://github.com/LORD-MicroStrain/ntrip_client) modules to support VRS networks providers.
+The driver can publish NMEA GGA messages from the internal GNSS receiver. It can be used with third party.
 
  Disabled by default, set `nmea.publish` to `true` in .yaml config file to use this feature.
 
